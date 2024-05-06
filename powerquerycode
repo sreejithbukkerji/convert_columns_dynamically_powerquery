@@ -1,0 +1,33 @@
+let
+  Source = myTableSource,
+  DynamicConversion = Table.TransformColumns(
+    Source,
+    List.Transform(
+      Table.SelectRows(Table.Schema(Source), each [Kind] = "date")[Name],
+      each {_, each Date.ToText(_, "dd.MM.yyyy"), type text}
+    )
+  )
+in
+  DynamicConversion
+
+This code snippet dynamically converts all date columns in a Power Query table to text format (dd.mm.yyyy). Here's a breakdown of each step:
+
+Source: Defines the starting point, which should be replaced with the actual name of your table in Power Query.
+DynamicConversion: This variable stores the transformed table with converted date columns.
+Table.TransformColumns(Source, ...): This function iterates through each column in the Source table and applies a transformation based on a custom function.
+List.Transform(...) (Inner Function):
+This function creates a list by iterating through each date column name and applying further logic.
+Table.SelectRows(Table.Schema(Source), each [Kind] = "date"): This part extracts the schema (column information) from the Source table and filters it to include only rows where the Kind is "date". This effectively selects just the date columns.
+[Name]: Selects the column names from the filtered list of date columns (obtained in the previous step).
+each {, each Date.ToText(, "dd.MM.yyyy"), type text}: This anonymous function performs two actions for each date column name:
+Date.ToText(_, "dd.MM.yyyy"): Converts the date value in that column to text format with the "dd.MM.yyyy" format (day, month, year). The underscore (_) represents the current value being processed.
+type text: Sets the data type of the converted text to "text".
+) - End of Inner Function: This closes the anonymous function used within List.Transform.
+): This closes the outer List.Transform function call.
+Table.TransformColumns(..., ...): (Resumed) The result from the inner List.Transform function (a list containing converted values and data types for date columns) is used within Table.TransformColumns.
+It iterates through each column in the Source table.
+If the current column name is present in the list of transformed date column names, it uses the converted value and data type from the list (effectively replacing the original date value with formatted text).
+If the current column name is not present (meaning it's not a date column), it keeps the original column value unchanged.
+in Keyword: Introduces the final step.
+DynamicConversion: Returns the transformed table with converted date columns stored in the DynamicConversion variable.
+This approach dynamically identifies and converts only the date columns while preserving the original data types of non-date columns.
